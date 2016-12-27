@@ -221,4 +221,5 @@ class CrossMessenger extends EventEmitter {
 
 module.exports = CrossMessenger;
 
+// @todo - fix this
 window.CrossMessenger = CrossMessenger;
