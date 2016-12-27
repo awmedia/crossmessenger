@@ -1,0 +1,35 @@
+{
+  "name": "aw-crossmessenger",
+  "version": "1.0.0",
+  "description": "Cross domain iframe messenger with reply support",
+  "repository": null,
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --content-base ./ --host localhost --port 8080 --hot --inline",
+    "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
+    "dev-server": "webpack-dev-server --progress --colors --watch --config webpack/dev.config.js --host 0.0.0.0 --port 8081",
+    "dev-server-jerry": "webpack-dev-server --progress --colors --watch --config webpack/dev.config.js --host 192.168.10.30 --port 8082",
+    "dev-server-jerry-home": "webpack-dev-server --progress --colors --watch --config webpack/dev.config.js --port 8082",
+    "new-dev-server": "webpack-dev-server --progress --colors --watch",
+    "build-dev": "webpack --config ./webpack/dev.config.js --progress",
+    "build-dev-watch": "webpack --config ./webpack/dev.config.js --progress --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.2.1",
+    "babel-loader": "^6.2.0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015": "^6.1.18",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
+  },
+  "dependencies": {
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-polyfill": "^6.13.0",
+    "babel-preset-stage-1": "^6.1.18",
+    "dotenv-safe": "^2.3.1",
+    "eventemitter3": "^2.0.2",
+    "lodash": "^4.16.0"
+  }
+}
