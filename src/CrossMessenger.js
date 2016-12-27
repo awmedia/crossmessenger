@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3';
-import { get, has } from 'lodash';          // @TODO - make sure that this only imports these functions and dependencies, but not the whole lib
+//import { get, has } from 'lodash';          // @TODO - make sure that this only imports these functions and dependencies, but not the whole lib
+import _ from 'lodash';
 
 /**
  * CrossMessenger
@@ -23,7 +24,7 @@ class CrossMessenger extends EventEmitter {
         }
 
         // configureable
-        this._targetFrame = config.targetFrame;
+        this._targetFrame = (config.targetFrame && 'contentWindow' in config.targetFrame) ? config.targetFrame.contentWindow : config.targetFrame;
         this._targetDomain = config.targetDomain;
         this._messageScope = config.messageScope;
         this._actionRouter = _.get(config, 'actionRouter');
@@ -113,15 +114,14 @@ class CrossMessenger extends EventEmitter {
             result = Promise.resolve();
         }
 
+        message.id = id;
         message.messageScope = this._messageScope;
 
-        console.log('Sending message: ', message);
+        console.log('Sending ',('replyId' in message ? 'REPLY' : 'MESSAGE'),': ', message);
 
         try {
             serializedMessage = JSON.stringify(message);
             this._targetFrame.postMessage(serializedMessage, this._targetDomain);
-            window._tf = this._targetFrame;
-            console.log('tf: ', this._targetFrame);
         } catch(error) {
             throw new Error('Could not serialize message: ' + error);
         }
@@ -151,6 +151,7 @@ class CrossMessenger extends EventEmitter {
 
     _setReadyWhenReady() {
         if (this._hasHandshake && this._isDomReady) {
+            console.log('setting ready');
             this._isReadyResolver();
             this.emit('ready', this);
         }
@@ -160,15 +161,17 @@ class CrossMessenger extends EventEmitter {
      * Event handler methods
      */
 
-    _handleReceive = (rawMessage) => {
-        console.log('Receiving message: ', rawMessage);
+    _handleReceive = (postMessage) => {
+        let message;
 
          try {
-             const message = JSON.parse(rawMessage);
+             message = JSON.parse(postMessage.data);
          } catch(error) {
              // Could not parse message. Message is invalid, so ignore...
              return;
          }
+
+        console.log('Receiving ', ('replyId' in message ? 'REPLY' : 'MESSAGE'),': ', message);
 
         const isValidMessage = (_.get(message, 'messageScope') === this._messageScope && _.has(message, 'id')),
             isHandshake = isValidMessage ? _.get(message, 'name') === '_handshake' : null,
@@ -177,7 +180,7 @@ class CrossMessenger extends EventEmitter {
 
         // when the message is not a reply but is a _handshake, confirm
         // the handshake by reply the message.
-        if (isValidMessage && isHandshake && !_has(message, 'replyId') && messageId) {
+        if (isValidMessage && isHandshake && !_.has(message, 'replyId') && messageId) {
             this.reply(messageId, { message: '_handshake' }, false, true);
             this._setHandshakeSuccess();
         }
@@ -188,7 +191,7 @@ class CrossMessenger extends EventEmitter {
         }
 
         const name = _.get(message, 'name'),
-            isValidReply = _has(this._waitingForReplyList, _.get(message, 'replyId')),
+            isValidReply = _.has(this._waitingForReplyList, _.get(message, 'replyId')),
             replyResolver = isValidReply ? this._waitingForReplyList[message.replyId] : null;
 
         switch(name) {

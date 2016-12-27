@@ -40,7 +40,6 @@
 
         <script>
             window.onload = function() {
-                console.log('hiero2: ', document.querySelector('#iframe'));
                 const parentMessenger = new CrossMessenger({
                     targetFrame: document.querySelector('#iframe'),
                     targetDomain: 'http://localhost:8082',
@@ -48,11 +47,12 @@
                 });
 
 
-                parentMessenger.send({
-                    action: 'redux-action-creator',
-                    name: 'tool.setVisibilityState',
-                    payload: 'HIDDEN'
-                });
+
+//                parentMessenger.send({
+//                    action: 'redux-action-creator',
+//                    name: 'tool.setVisibilityState',
+//                    payload: 'HIDDEN'
+//                });
             }
         </script>
 
