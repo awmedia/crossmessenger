@@ -36,13 +36,15 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <script>
-            window.onload = function() {
+            setTimeout(function() {
                 const iframeMessenger = new CrossMessenger({
                     targetFrame: window.parent,
                     targetDomain: 'http://localhost:8082',
                     messageScope: '_UNIQUE_SCOPE_'
                 });
-            }
+            }, 4000);
+
+
 
 //            parentMessenger.send({
 //                action: 'redux-action-creator',

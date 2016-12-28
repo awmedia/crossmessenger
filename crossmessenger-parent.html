@@ -36,26 +36,24 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 
-
+        <iframe src="http://localhost:8082/crossmessenger-iframe.html" id="iframe"></iframe>
 
         <script>
-            window.onload = function() {
                 const parentMessenger = new CrossMessenger({
                     targetFrame: document.querySelector('#iframe'),
                     targetDomain: 'http://localhost:8082',
                     messageScope: '_UNIQUE_SCOPE_'
                 });
+setTimeout(function() {
+    parentMessenger.send({
+        action: 'redux-action-creator',
+        name: 'tool.setVisibilityState',
+        payload: 'HIDDEN'
+    }, true).then(function() {
+        console.log('Response received: ', arguments);
+    });
+}, 6000)
 
-
-
-//                parentMessenger.send({
-//                    action: 'redux-action-creator',
-//                    name: 'tool.setVisibilityState',
-//                    payload: 'HIDDEN'
-//                });
-            }
         </script>
-
-        <iframe src="http://localhost:8082/crossmessenger-iframe.html" id="iframe" />
     </body>
 </html>
