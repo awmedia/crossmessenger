@@ -23,6 +23,18 @@ class CrossMessenger extends EventEmitter {
             console.error(error);
         }
 
+        if (!config.targetFrame) {
+            throw new Error('Invalid target frame');
+        }
+
+        this._isParentFrame = (config.targetFrame !== window.parent);
+        this._loggerFn = this._isParentFrame ? 'info' : 'warn';
+        if (this._isParentFrame) {
+            CrossMessenger._idCounter = 1000;
+        }
+
+        console[this._loggerFn]('constructor ', (this._isParentFrame ? 'PARENT' : 'CHILD'));
+
         // configureable
         this._targetFrame = (config.targetFrame && 'contentWindow' in config.targetFrame) ? config.targetFrame.contentWindow : config.targetFrame;
         this._targetDomain = config.targetDomain;
@@ -106,7 +118,7 @@ class CrossMessenger extends EventEmitter {
         let result,
             serializedMessage;
 
-        if (expectReply && this._actionRouter) {
+        if (expectReply) {
             result = new Promise((resolve) => {
                 this._waitingForReplyList[id] = resolve;
             });
@@ -116,8 +128,9 @@ class CrossMessenger extends EventEmitter {
 
         message.id = id;
         message.messageScope = this._messageScope;
+        message.expectReply = expectReply;
 
-        console.log('Sending ',('replyId' in message ? 'REPLY' : 'MESSAGE'),': ', message);
+        console[this._loggerFn]('Sending ',('replyId' in message ? 'REPLY' : 'MESSAGE'), ' to ', (this._isParentFrame ? 'CHILD' : 'PARENT'), message);
 
         try {
             serializedMessage = JSON.stringify(message);
@@ -144,14 +157,14 @@ class CrossMessenger extends EventEmitter {
             this._setReadyWhenReady();
 
             if (!this._hasHandshake) {
-                this.send({ name: '_handshake' }, true, true).then(this._setHandshakeSuccess);
+                this.send({ name: '_handshake' }, false, true);
             }
         }
     }
 
     _setReadyWhenReady() {
         if (this._hasHandshake && this._isDomReady) {
-            console.log('setting ready');
+            console[this._loggerFn]("\n\n\n", 'Set ready ', (this._isParentFrame ? 'PARENT' : 'CHILD'), "\n\n\n\n");
             this._isReadyResolver();
             this.emit('ready', this);
         }
@@ -171,17 +184,24 @@ class CrossMessenger extends EventEmitter {
              return;
          }
 
-        console.log('Receiving ', ('replyId' in message ? 'REPLY' : 'MESSAGE'),': ', message);
+        console[this._loggerFn]('Receiving ', ('replyId' in message ? 'REPLY' : 'MESSAGE'),' from  ', (this._isParentFrame ? 'CHILD' : 'PARENT'), message);
 
         const isValidMessage = (_.get(message, 'messageScope') === this._messageScope && _.has(message, 'id')),
             isHandshake = isValidMessage ? _.get(message, 'name') === '_handshake' : null,
             messageId = isValidMessage ? _.get(message, 'id') : null,
-            expectReply = _.get(message, 'expectReply') === true;
+            expectReply = _.get(message, 'expectReply') === true,
+            isReply = _.has(message, 'replyId');
+
+        //console.log("\t\t\t", ' isValidMessage: ', isValidMessage, ' | isHandshake: ', isHandshake, ' | messageId: ', messageId, ' | expectReply: ', expectReply);
 
         // when the message is not a reply but is a _handshake, confirm
         // the handshake by reply the message.
-        if (isValidMessage && isHandshake && !_.has(message, 'replyId') && messageId) {
-            this.reply(messageId, { message: '_handshake' }, false, true);
+        if (isValidMessage && isHandshake && messageId) {
+            if (!isReply) {
+                console.log("\n\n\n\n");
+                this.reply(messageId, {name: '_handshake'}, false, true);
+            }
+
             this._setHandshakeSuccess();
         }
 
@@ -194,27 +214,25 @@ class CrossMessenger extends EventEmitter {
             isValidReply = _.has(this._waitingForReplyList, _.get(message, 'replyId')),
             replyResolver = isValidReply ? this._waitingForReplyList[message.replyId] : null;
 
-        switch(name) {
-            default:
-                this.emit('receive', message, this);
+        this.emit('receive', message, this);
 
-                if (isValidReply) {
-                    replyResolver(message);
-                    this.emit('reply', message, this);
-                } else {
-                    if (this._actionRouter) {
-                        const replyPayload = this._actionRouter.handleMessage(message, this);
+        if (isValidReply) {
+            replyResolver(message);
+            delete this._waitingForReplyList[message.replyId];
+            this.emit('reply', message, this);
+        } else {
+            if (expectReply) {
+                const replyPayload = this._actionRouter ? this._actionRouter.handleMessage(message, this) : null;
 
-                        if (expectReply && replyPayload !== undefined) {
-                            this.reply(messageId, {
-                                ...message,
-                                payload: replyPayload
-                            });
-                        }
-                    }
+                this.reply(messageId, {
+                    ...message,
+                    payload: replyPayload
+                });
+            } else if(this._actionRouter) {
+                this._actionRouter.handleMessage(message, this);
+            }
 
-                    this.emit('message', message, this);
-                }
+            this.emit('message', message, this);
         }
     }
 }
