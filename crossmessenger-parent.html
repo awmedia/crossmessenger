@@ -31,6 +31,24 @@
                     console.log('Received reply from child: ', arguments);
                 });
 
+
+                // attach listeners for debugging
+                iframeMessenger.on('ready', function() {
+                    console.info("\n\n\n", 'Set ready PARENT', "\n\n\n\n");
+                });
+
+                iframeMessenger.on('message', function(message) {
+                    console.warn('Receiving MESSAGE from PARENT', message);
+                });
+
+                iframeMessenger.on('reply', function(message) {
+                    console.warn('Receiving REPLY from CHILD', message);
+                });
+
+                iframeMessenger.on('send', function(message) {
+                    //console.warn('Sending ', ('replyId' in message ? 'REPLY' : 'MESSAGE'), ' to CHILD', message);
+                });
+
         </script>
     </body>
 </html>
