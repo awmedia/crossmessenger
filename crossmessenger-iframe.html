@@ -7,27 +7,6 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
         <title>CrossMessenger iframe</title>
-
-        <!-- Add to homescreen for Chrome on Android -->
-        <meta name="mobile-web-app-capable" content="yes">
-        <link rel="icon" sizes="192x192" href="/style/images/android-desktop.png">
-
-        <!-- Add to homescreen for Safari on iOS -->
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black">
-        <meta name="apple-mobile-web-app-title" content="Material Design Lite">
-        <link rel="apple-touch-icon-precomposed" href="/style/images/ios-desktop.png">
-
-        <!-- Tile icon for Win8 (144x144 + tile color) -->
-        <meta name="msapplication-TileImage" content="/style/images/touch/ms-touch-icon-144x144-precomposed.png">
-        <meta name="msapplication-TileColor" content="#3372DF">
-
-        <link rel="shortcut icon" href="images/favicon.png">
-
-        <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,100italic,300italic,400italic,500,500italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-        <!--<link rel="stylesheet" href="/node_modules/material-design-lite/material.min.css">-->
-        <link href="https://cdn.materialdesignicons.com/1.4.57/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
         <script src="/build/crossmessenger.bundle.js"></script>
     </head>
 
@@ -36,21 +15,24 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <script>
+
+            // set timeout to fake delay
             setTimeout(function() {
-                const iframeMessenger = new CrossMessenger({
+                const parentMessenger = new CrossMessenger({
                     targetFrame: window.parent,
                     targetDomain: 'http://localhost:8082',
                     messageScope: '_UNIQUE_SCOPE_'
                 });
+
+                parentMessenger.send({
+                    action: 'redux-action-creator',
+                    name: 'test-from-child-to-parent',
+                    payload: 'other-payload'
+                }, true).then(function() {
+                    console.log('Received reply from parent: ', arguments);
+                });
+
             }, 4000);
-
-
-
-//            parentMessenger.send({
-//                action: 'redux-action-creator',
-//                name: 'tool.setVisibilityState',
-//                payload: 'HIDDEN'
-//            });
 
         </script>
     </body>
