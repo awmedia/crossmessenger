@@ -50,9 +50,10 @@ class CrossMessenger extends EventEmitter {
         // Is dom ready? If so, mark internal ready state as true, otherwise attach
         // an event listener to the document to detect when dom is ready...
         if (document.readyState === 'complete') {
-            this._setDomSuccess();
+            setTimeout(this._setDomSuccess.bind(this));
         } else {
             document.addEventListener('DOMContentLoaded', this._setDomSuccess);
+            window.addEventListener('load', this._setDomSuccess);
         }
     }
 
@@ -129,7 +130,7 @@ class CrossMessenger extends EventEmitter {
 
         try {
             serializedMessage = JSON.stringify(message);
-            this.emit('send', serializedMessage);
+            this.emit('send', message);
             this._targetFrame.postMessage(serializedMessage, this._targetDomain);
         } catch(error) {
             throw new Error('Could not serialize message: ' + error);
@@ -141,14 +142,16 @@ class CrossMessenger extends EventEmitter {
     _setHandshakeSuccess = () => {
         if (!this._hasHandshake) {
             this._hasHandshake = true;
-            this._setReadyWhenReady();
             this.emit('handshake', this);
+            this._setReadyWhenReady();
+
         }
     }
 
     _setDomSuccess = () => {
         if (!this._isDomReady) {
             this._isDomReady = true;
+
             this.emit('domready', this);
             this._setReadyWhenReady();
 
