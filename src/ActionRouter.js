@@ -14,7 +14,7 @@ class ActionRouter {
             const result = handler(message, this, messenger);
 
             if (result !== undefined) {
-                this._router.reply(message.id, {
+                messenger.reply(message.id, {
 
                 });
             }
