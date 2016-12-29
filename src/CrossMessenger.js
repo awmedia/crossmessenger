@@ -27,10 +27,10 @@ class CrossMessenger extends EventEmitter {
             throw new Error('Invalid target frame');
         }
 
-        this._isParentFrame = (config.targetFrame !== window.parent);
-        this._loggerFn = this._isParentFrame ? 'info' : 'warn';
-        if (this._isParentFrame) {
-            CrossMessenger._idCounter = 1000;
+        this._isParentFrame = (config.targetFrame !== window.parent);   // @DEBUG code
+        this._loggerFn = this._isParentFrame ? 'info' : 'warn';     // @DEBUG code
+        if (this._isParentFrame) {                                  // @DEBUG code
+            //CrossMessenger._idCounter = 1000;
         }
 
         console[this._loggerFn]('constructor ', (this._isParentFrame ? 'PARENT' : 'CHILD'));
@@ -67,6 +67,14 @@ class CrossMessenger extends EventEmitter {
      * Public methods
      */
 
+    /**
+     * reply
+     * @param replyId
+     * @param message
+     * @param expectReply
+     * @param force
+     * @return {*}
+     */
     reply(replyId, message, expectReply = false, force = false) {
         return this.send({
                 ...message,
@@ -192,17 +200,14 @@ class CrossMessenger extends EventEmitter {
             expectReply = _.get(message, 'expectReply') === true,
             isReply = _.has(message, 'replyId');
 
-        //console.log("\t\t\t", ' isValidMessage: ', isValidMessage, ' | isHandshake: ', isHandshake, ' | messageId: ', messageId, ' | expectReply: ', expectReply);
-
         // when the message is not a reply but is a _handshake, confirm
-        // the handshake by reply the message.
+        // the handshake by replying.
         if (isValidMessage && isHandshake && messageId) {
             if (!isReply) {
-                console.log("\n\n\n\n");
                 this.reply(messageId, {name: '_handshake'}, false, true);
             }
 
-            this._setHandshakeSuccess();
+            setTimeout(this._setHandshakeSuccess.bind(this));
         }
 
         // Not a CrossMessenger message or not a message for this instance...
