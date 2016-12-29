@@ -6,6 +6,7 @@ import _ from 'lodash';
  * CrossMessenger
  * @event   receive     When a message or a reply is received
  * @event   message     When a message is received  (NOT a reply)
+ * @event   send        When a message will be sended
  * @event   reply       When a reply is received
  * @event   domready    When the DOM is ready
  * @event   handshake   When handshake is successful and ready
@@ -26,14 +27,6 @@ class CrossMessenger extends EventEmitter {
         if (!config.targetFrame) {
             throw new Error('Invalid target frame');
         }
-
-        this._isParentFrame = (config.targetFrame !== window.parent);   // @DEBUG code
-        this._loggerFn = this._isParentFrame ? 'info' : 'warn';     // @DEBUG code
-        if (this._isParentFrame) {                                  // @DEBUG code
-            //CrossMessenger._idCounter = 1000;
-        }
-
-        console[this._loggerFn]('constructor ', (this._isParentFrame ? 'PARENT' : 'CHILD'));
 
         // configureable
         this._targetFrame = (config.targetFrame && 'contentWindow' in config.targetFrame) ? config.targetFrame.contentWindow : config.targetFrame;
@@ -69,19 +62,15 @@ class CrossMessenger extends EventEmitter {
 
     /**
      * reply
-     * @param replyId
-     * @param message
-     * @param expectReply
-     * @param force
+     * @param messageOrId
+     * @param messageData   additional message data, will be merged with message
      * @return {*}
      */
-    reply(replyId, message, expectReply = false, force = false) {
-        return this.send({
-                ...message,
-                replyId
-            },
-            expectReply
-        );
+    reply(messageOrId, messageData = {}) {
+        const baseMessage = (typeof messageOrId == 'object') ? messageOrId : { id: messageOrId },
+              message = Object.assign({}, baseMessage, messageData, { replyId: baseMessage.id });
+
+        return this.send(message);
     }
 
     /**
@@ -90,7 +79,7 @@ class CrossMessenger extends EventEmitter {
      * receive messages, or when "force" is true;
      * @param message
      * @param expectReply
-     * @param force         boolean     true to send even when system is not ready (internally used for handshake)
+     * @param force         boolean     true to send even when system is not ready (used internally for handshake)
      */
     send(message, expectReply = false, force = false) {
         if (force) {
@@ -138,10 +127,9 @@ class CrossMessenger extends EventEmitter {
         message.messageScope = this._messageScope;
         message.expectReply = expectReply;
 
-        console[this._loggerFn]('Sending ',('replyId' in message ? 'REPLY' : 'MESSAGE'), ' to ', (this._isParentFrame ? 'CHILD' : 'PARENT'), message);
-
         try {
             serializedMessage = JSON.stringify(message);
+            this.emit('send', serializedMessage);
             this._targetFrame.postMessage(serializedMessage, this._targetDomain);
         } catch(error) {
             throw new Error('Could not serialize message: ' + error);
@@ -172,7 +160,6 @@ class CrossMessenger extends EventEmitter {
 
     _setReadyWhenReady() {
         if (this._hasHandshake && this._isDomReady) {
-            console[this._loggerFn]("\n\n\n", 'Set ready ', (this._isParentFrame ? 'PARENT' : 'CHILD'), "\n\n\n\n");
             this._isReadyResolver();
             this.emit('ready', this);
         }
@@ -192,8 +179,6 @@ class CrossMessenger extends EventEmitter {
              return;
          }
 
-        console[this._loggerFn]('Receiving ', ('replyId' in message ? 'REPLY' : 'MESSAGE'),' from  ', (this._isParentFrame ? 'CHILD' : 'PARENT'), message);
-
         const isValidMessage = (_.get(message, 'messageScope') === this._messageScope && _.has(message, 'id')),
             isHandshake = isValidMessage ? _.get(message, 'name') === '_handshake' : null,
             messageId = isValidMessage ? _.get(message, 'id') : null,
@@ -204,7 +189,7 @@ class CrossMessenger extends EventEmitter {
         // the handshake by replying.
         if (isValidMessage && isHandshake && messageId) {
             if (!isReply) {
-                this.reply(messageId, {name: '_handshake'}, false, true);
+                this.reply(message, true);
             }
 
             setTimeout(this._setHandshakeSuccess.bind(this));
@@ -229,7 +214,7 @@ class CrossMessenger extends EventEmitter {
             if (expectReply) {
                 const replyPayload = this._actionRouter ? this._actionRouter.handleMessage(message, this) : null;
 
-                this.reply(messageId, {
+                this.reply({
                     ...message,
                     payload: replyPayload
                 });
