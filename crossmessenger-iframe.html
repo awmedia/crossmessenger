@@ -31,25 +31,37 @@
                     console.log('Received reply from parent: ', arguments);
                 });
 
+                attachEventListeners(parentMessenger);
 
+            }, 2000);
+
+
+            var attachEventListeners = function(messenger) {
                 // attach listeners for debugging
-                parentMessenger.on('ready', function() {
+                messenger.on('ready', function() {
                     console.warn("\n\n\n", 'Set ready CHILD', "\n\n\n\n");
                 });
 
-                parentMessenger.on('message', function(message) {
+                messenger.on('domready', function() {
+                    console.warn("\n\n\n", 'DOM ready CHILD', "\n\n\n\n");
+                });
+
+                messenger.on('handshake', function() {
+                    console.warn("\n\n\n", 'Handshake ready CHILD', "\n\n\n\n");
+                });
+
+                messenger.on('message', function(message) {
                     console.warn('Receiving MESSAGE from CHILD', message);
                 });
 
-                parentMessenger.on('reply', function(message) {
+                messenger.on('reply', function(message) {
                     console.warn('Receiving REPLY from PARENT', message);
                 });
 
-                parentMessenger.on('send', function(message) {
-                    //console.warn('Sending ', ('replyId' in message ? 'REPLY' : 'MESSAGE'), ' to PARENT', message);
+                messenger.on('send', function(message) {
+                    console.warn('Sending ', ('replyId' in message ? 'REPLY' : 'MESSAGE'), ' to PARENT', message);
                 });
-
-            }, 4000);
+            }
 
         </script>
     </body>
