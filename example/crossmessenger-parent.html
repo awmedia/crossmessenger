@@ -33,27 +33,9 @@
                     }, true).then(function(message) {
                         console.log('Received reply from child: ', message);
                     });
-
-//                    setTimeout(function() {
-//                        for (var i = 0; i < 10000; i++) {
-//                            iframeMessenger.send({
-//                                action: 'redux-action-creator',
-//                                name: 'test-from-parent-to-child-' + i,
-//                                payload: 'some-payload-' + i,
-//                            }, true).then(function(message) {
-//                                if (message.name === 'test-from-parent-to-child-9999') {
-//                                    console.log('Received reply from child: ', message.name);
-//                                    console.log('DONE');
-//                                }
-//                            });
-//
-//                            //console.info('Send message from parent: ', 'test-from-parent-to-child-');
-//                        }
-//                    });
                 });
 
-
-                var attachEventListeners = function(messenger) {
+                var attachEventListeners = function(messenger, loggerContainer, logToDoc) {
                     // attach listeners for debugging
                     messenger.on('ready', function() {
                         console.info("\n\n\n", 'Set ready PARENT', "\n\n\n\n");
@@ -81,5 +63,6 @@
                 };
 
         </script>
+
     </body>
 </html>
