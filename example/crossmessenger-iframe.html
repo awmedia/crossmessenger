@@ -7,7 +7,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
         <title>CrossMessenger iframe</title>
-        <script src="../dist/crossmessenger.min.js"></script>
+        <script src="http://localhost:8082/dist/CrossMessenger.js"></script>
     </head>
 
     <body>
@@ -15,12 +15,23 @@
 
         <script>
 
+            var messageActionHandler = function(message, messenger) {
+                switch(message.action) {
+                    case 'redux-action-creator':
+                        return { manufacturer: 'Apple', type: 'MacBook Pro 13inch 2015' }   // some result
+                        break;
+                }
+
+                return null;
+            };
+
             // set timeout to fake delay
             setTimeout(function() {
                 const parentMessenger = new CrossMessenger({
                     targetFrame: window.parent,
-                    targetDomain: 'http://localhost:8082',
-                    messageScope: '_UNIQUE_SCOPE_'
+                    targetOrigin: 'http://localhost:8082',
+                    messageScope: '_UNIQUE_SCOPE_',
+                    messageHandler: messageActionHandler
                 });
 
                 attachEventListeners(parentMessenger);
