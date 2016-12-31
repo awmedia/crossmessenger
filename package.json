@@ -4,13 +4,8 @@
   "description": "Promise based iframe messenger through postMessage",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test",
-    "build": "webpack -p",
-    "server-watch": "webpack-dev-server --watch --port 8082",
-    "preversion": "npm test",
-    "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
-    "postversion": "git push && git push --tags",
-    "examples": "node ./examples/server.js"
+    "build": "webpack",
+    "server": "webpack-dev-server --watch --port 8082"
   },
   "repository": {
     "type": "git",
