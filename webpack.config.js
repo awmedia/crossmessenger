@@ -3,18 +3,19 @@ var config = [];
 
 function generateConfig(name) {
     var uglify = name.indexOf('min') > -1;
+
     var config = {
-        entry: './index.js',
+        context: __dirname + "/",
+        entry: {
+            [name]: './index.js'
+        },
         output: {
             path: 'dist/',
-            filename: name + '.js',
-            sourceMapFilename: name + '.map',
-            library: 'crossmessenger',
+            filename: '[name].js',
+            sourceMapFilename: '[name].map',
+            publicPath: 'dist',
+            library: 'CrossMessenger',
             libraryTarget: 'umd'
-        },
-
-        node: {
-            process: false
         },
 
         module: {
@@ -61,7 +62,7 @@ function generateConfig(name) {
     return config;
 }
 
-['crossmessenger', 'crossmessenger.min'].forEach(function (key) {
+['CrossMessenger', 'CrossMessenger.min'].forEach(function (key) {
     config.push(generateConfig(key));
 });
 

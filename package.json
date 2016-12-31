@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt test",
-    "build": "NODE_ENV=production grunt build",
-    "build": "webpack -p --config ./webpack/prod.config.js",
-    "server-watch": "webpack-dev-server --progress --colors --watch --port 8082",
+    "build": "webpack -p",
+    "server-watch": "webpack-dev-server --watch --port 8082",
     "preversion": "npm test",
     "version": "npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json",
     "postversion": "git push && git push --tags",
