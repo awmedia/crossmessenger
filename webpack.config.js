@@ -26,7 +26,7 @@ function generateConfig(name) {
                     exclude: /node_modules/,
                     query: {
                         presets: ['es2015', 'stage-1'],
-                        plugins: ["transform-decorators-legacy", "transform-decorators-legacy"]
+                        plugins: ["transform-decorators-legacy"]
                     }
                 }
             ]
