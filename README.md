@@ -1,6 +1,6 @@
 ##CrossMessenger
 
-Messenger to communicate between frames through postMessage. Messages can be replied to confirm processiong or to return data. Use the optional messageHandler to control the return value.
+Messenger to communicate between frames through postMessage. Messages can be replied to confirm being processed or to return data. Use the optional messageHandler to control the return value.
 
 
 #### Example
